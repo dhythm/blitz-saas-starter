@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -12,17 +12,64 @@ generator client {
 
 // --------------------------------------
 
-model User {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  name           String?
-  email          String   @unique
-  hashedPassword String?
-  role           String   @default("USER")
+model Ability {
+  id               String             @id @default(uuid())
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  name             String             @unique
+  domain           Domain
+  action           Action
+  abilitiesOnRoles AbilitiesOnRoles[]
+  roles            Role[]
+}
 
-  tokens   Token[]
-  sessions Session[]
+model Role {
+  id               String             @id @default(uuid())
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  organizationCode String
+  name             String
+  abilitiesOnRoles AbilitiesOnRoles[]
+  abilities        Ability[]
+  users            User[]
+
+  @@unique([organizationCode, name])
+}
+
+model AbilitiesOnRoles {
+  roleId     String
+  abilityId  String
+  assignedAt DateTime @default(now())
+  ability    Ability  @relation(fields: [abilityId], references: [id])
+  role       Role     @relation(fields: [roleId], references: [id])
+
+  @@id([roleId, abilityId])
+}
+
+model Organization {
+  id               String   @id @default(uuid())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  organizationCode String   @unique
+  name             String
+  users            User[]
+}
+
+model User {
+  id               Int          @id @default(autoincrement())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  name             String?
+  email            String
+  hashedPassword   String?
+  organizationCode String
+  organization     Organization @relation(fields: [organizationCode], references: [organizationCode])
+  roleId           String
+  role             Role         @relation(fields: [roleId], references: [id])
+  tokens           Token[]
+  sessions         Session[]
+
+  @@unique([organizationCode, email])
 }
 
 model Session {
@@ -63,3 +110,12 @@ model Token {
 // enum TokenType {
 //   RESET_PASSWORD
 // }
+
+enum Action {
+  query
+  mutate
+}
+
+enum Domain {
+  settings
+}
