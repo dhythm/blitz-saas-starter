@@ -10,9 +10,10 @@ blitz prisma generate
 blitz prisma migrate dev
 blitz db seed
 
-
+# https://github.com/blitz-js/blitz/issues/3805
+blitz install chakra-ui
 ```
 ## Getting Started
 ```sh
-
+blitz dev
 ```
