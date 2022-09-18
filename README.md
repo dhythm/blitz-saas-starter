@@ -16,4 +16,7 @@ blitz install chakra-ui
 ## Getting Started
 ```sh
 blitz dev
+
+https://blitzjs.com/docs/cli-generate
+blitz g [type] [model]
 ```
